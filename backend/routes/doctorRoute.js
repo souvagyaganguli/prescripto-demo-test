@@ -1,6 +1,7 @@
 import express from "express";
 import {
   doctorList,
+  searchDoctors,
   loginDoctor,
   appointmentsDoctor,
   appointmentComplete,
@@ -14,6 +15,7 @@ import authDoctor from "../middlewares/authDoctor.js";
 const doctorRouter = express.Router();
 
 doctorRouter.get("/list", doctorList);
+doctorRouter.get("/search", searchDoctors);
 doctorRouter.post("/login", loginDoctor);
 doctorRouter.get("/appointments", authDoctor, appointmentsDoctor);
 doctorRouter.post("/complete-appointment", authDoctor, appointmentComplete);

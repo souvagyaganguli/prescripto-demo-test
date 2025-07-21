@@ -29,6 +29,29 @@ const doctorList = async (req, res) => {
   }
 };
 
+const searchDoctors = async (req, res) => {
+  try {
+    const { location, speciality, language, availability, rating } = req.query;
+
+    const filter = {};
+    if (location) filter.location = location;
+    if (speciality) filter.speciality = speciality;
+    if (language) filter.languages = language;
+    if (availability !== undefined)
+      filter.available = availability === "true";
+    if (rating) filter.rating = { $gte: Number(rating) };
+
+    const doctors = await doctorModel
+      .find(filter)
+      .select(["-password", "-email"]);
+
+    res.json({ success: true, doctors });
+  } catch (error) {
+    console.log(error);
+    res.json({ success: false, message: error.message });
+  }
+};
+
 // API for doctor Login
 const loginDoctor = async (req, res) => {
   try {
@@ -184,6 +207,7 @@ const updateDoctorProfile = async (req, res) => {
 export {
   changeAvailability,
   doctorList,
+  searchDoctors,
   loginDoctor,
   appointmentsDoctor,
   appointmentCancel,

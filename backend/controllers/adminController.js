@@ -5,6 +5,7 @@ import doctorModel from "../models/doctorModel.js";
 import jwt from "jsonwebtoken";
 import appointmentModel from "../models/appointmentModel.js";
 import userModel from "../models/userModel.js";
+import sendEmail from "../utils/sendEmail.js";
 
 // API for adding doctor
 const addDoctor = async (req, res) => {
@@ -153,6 +154,13 @@ const appointmentCancel = async (req, res) => {
     );
 
     await doctorModel.findByIdAndUpdate(docId, { slots_booked });
+
+    const cancelMsg = `Appointment on ${slotDate} at ${slotTime} has been cancelled by admin.`;
+    await Promise.all([
+      sendEmail(appointmentData.userData.email, "Appointment Cancelled", cancelMsg),
+      sendEmail(appointmentData.docData.email, "Appointment Cancelled", cancelMsg),
+      sendEmail(process.env.ADMIN_EMAIL, "Appointment Cancelled", cancelMsg),
+    ]);
 
     res.json({ success: true, message: "Appointment Cancelled" });
   } catch (error) {

@@ -5,6 +5,8 @@ import jwt from "jsonwebtoken";
 import { v2 as cloudinary } from "cloudinary";
 import doctorModel from "../models/doctorModel.js";
 import appointmentModel from "../models/appointmentModel.js";
+import crypto from "crypto";
+import sendEmail from "../utils/sendEmail.js";
 
 // API to register user
 const registerUser = async (req, res) => {
@@ -162,6 +164,18 @@ const bookAppointment = async (req, res) => {
     const newAppointment = new appointmentModel(appointmentData);
     await newAppointment.save();
 
+    // generate meeting link and update appointment
+    const token = crypto.randomBytes(8).toString("hex");
+    const meetingLink = `https://video.example.com/${token}`;
+    await appointmentModel.findByIdAndUpdate(newAppointment._id, { meetingLink });
+
+    const message = `Your appointment with Dr. ${docData.name} on ${slotDate} at ${slotTime} is booked. Join using this link: ${meetingLink}`;
+    await Promise.all([
+      sendEmail(userData.email, "Appointment Booked", message),
+      sendEmail(docData.email, "New Appointment", message),
+      sendEmail(process.env.ADMIN_EMAIL, "Appointment Booked", message),
+    ]);
+
     // save new slots data in docData
     await doctorModel.findByIdAndUpdate(docId, { slots_booked });
 
@@ -214,6 +228,13 @@ const cancelAppointment = async (req, res) => {
     );
 
     await doctorModel.findByIdAndUpdate(docId, { slots_booked });
+
+    const cancelMsg = `Your appointment on ${slotDate} at ${slotTime} has been cancelled.`;
+    await Promise.all([
+      sendEmail(appointmentData.userData.email, "Appointment Cancelled", cancelMsg),
+      sendEmail(appointmentData.docData.email, "Appointment Cancelled", cancelMsg),
+      sendEmail(process.env.ADMIN_EMAIL, "Appointment Cancelled", cancelMsg),
+    ]);
 
     res.json({ success: true, message: "Appointment Cancelled" });
   } catch (error) {

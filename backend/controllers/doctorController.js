@@ -2,6 +2,7 @@ import doctorModel from "../models/doctorModel.js";
 import bycrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import appointmentModel from "../models/appointmentModel.js";
+import sendEmail from "../utils/sendEmail.js";
 
 const changeAvailability = async (req, res) => {
   try {
@@ -20,6 +21,29 @@ const changeAvailability = async (req, res) => {
 const doctorList = async (req, res) => {
   try {
     const doctors = await doctorModel.find({}).select(["-password", "-email"]);
+
+    res.json({ success: true, doctors });
+  } catch (error) {
+    console.log(error);
+    res.json({ success: false, message: error.message });
+  }
+};
+
+const searchDoctors = async (req, res) => {
+  try {
+    const { location, speciality, language, availability, rating } = req.query;
+
+    const filter = {};
+    if (location) filter.location = location;
+    if (speciality) filter.speciality = speciality;
+    if (language) filter.languages = language;
+    if (availability !== undefined)
+      filter.available = availability === "true";
+    if (rating) filter.rating = { $gte: Number(rating) };
+
+    const doctors = await doctorModel
+      .find(filter)
+      .select(["-password", "-email"]);
 
     res.json({ success: true, doctors });
   } catch (error) {
@@ -75,6 +99,12 @@ const appointmentComplete = async (req, res) => {
       await appointmentModel.findByIdAndUpdate(appointmentId, {
         isCompleted: true,
       });
+      const completeMsg = `Appointment on ${appointmentData.slotDate} at ${appointmentData.slotTime} has been completed.`;
+      await Promise.all([
+        sendEmail(appointmentData.userData.email, "Appointment Completed", completeMsg),
+        sendEmail(appointmentData.docData.email, "Appointment Completed", completeMsg),
+        sendEmail(process.env.ADMIN_EMAIL, "Appointment Completed", completeMsg),
+      ]);
       return res.json({ success: true, message: "Appointment Completed" });
     } else {
       return res.json({ success: false, message: "Mark Failed" });
@@ -95,6 +125,12 @@ const appointmentCancel = async (req, res) => {
       await appointmentModel.findByIdAndUpdate(appointmentId, {
         cancelled: true,
       });
+      const cancelMsg = `Appointment on ${appointmentData.slotDate} at ${appointmentData.slotTime} has been cancelled.`;
+      await Promise.all([
+        sendEmail(appointmentData.userData.email, "Appointment Cancelled", cancelMsg),
+        sendEmail(appointmentData.docData.email, "Appointment Cancelled", cancelMsg),
+        sendEmail(process.env.ADMIN_EMAIL, "Appointment Cancelled", cancelMsg),
+      ]);
       return res.json({ success: true, message: "Appointment Cancelled" });
     } else {
       return res.json({ success: false, message: "Cancellation Failed" });
@@ -171,6 +207,7 @@ const updateDoctorProfile = async (req, res) => {
 export {
   changeAvailability,
   doctorList,
+  searchDoctors,
   loginDoctor,
   appointmentsDoctor,
   appointmentCancel,

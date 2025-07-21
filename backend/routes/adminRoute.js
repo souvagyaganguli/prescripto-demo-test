@@ -6,6 +6,7 @@ import {
   appointmentsAdmin,
   appointmentCancel,
   adminDashboard,
+  therapistApplications,
 } from "../controllers/adminController.js";
 import upload from "../middlewares/multer.js";
 import authAdmin from "../middlewares/authAdmin.js";
@@ -21,6 +22,7 @@ adminRouter.post("/change-availability", authAdmin, changeAvailability);
 adminRouter.get("/appointments", authAdmin, appointmentsAdmin);
 adminRouter.post("/cancel-appointment", authAdmin, appointmentCancel);
 adminRouter.get("/dashboard", authAdmin, adminDashboard);
+adminRouter.get("/therapist-applications", authAdmin, therapistApplications);
 adminRouter.post("/therapist-application", authAdmin, approveTherapist);
 
 export default adminRouter;

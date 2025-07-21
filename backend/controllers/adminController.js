@@ -5,6 +5,7 @@ import doctorModel from "../models/doctorModel.js";
 import jwt from "jsonwebtoken";
 import appointmentModel from "../models/appointmentModel.js";
 import userModel from "../models/userModel.js";
+import therapistApplicationModel from "../models/therapistApplicationModel.js";
 import sendEmail from "../utils/sendEmail.js";
 
 // API for adding doctor
@@ -171,6 +172,19 @@ const appointmentCancel = async (req, res) => {
   }
 };
 
+// API to get pending therapist applications
+const therapistApplications = async (req, res) => {
+  try {
+    const applications = await therapistApplicationModel.find({
+      status: "pending",
+    });
+    res.json({ success: true, applications });
+  } catch (error) {
+    console.log(error);
+    res.json({ success: false, message: error.message });
+  }
+};
+
 // API to get dashboard data for admin panel
 const adminDashboard = async (req, res) => {
   try {
@@ -198,5 +212,6 @@ export {
   allDoctors,
   appointmentsAdmin,
   appointmentCancel,
+  therapistApplications,
   adminDashboard,
 };

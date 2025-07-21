@@ -11,6 +11,7 @@ const AdminContextProvider = (props) => {
   const [doctors, setDoctors] = useState([]);
   const [appointments, setAppointments] = useState([]);
   const [dashData, setDashData] = useState(false);
+  const [therapistApplications, setTherapistApplications] = useState([]);
 
   const backendUrl = import.meta.env.VITE_BACKEND_URL;
 
@@ -85,6 +86,41 @@ const AdminContextProvider = (props) => {
     }
   };
 
+  const getTherapistApplications = async () => {
+    try {
+      const { data } = await axios.get(
+        backendUrl + "/api/admin/therapist-applications",
+        { headers: { aToken } }
+      );
+
+      if (data.success) {
+        setTherapistApplications(data.applications);
+      } else {
+        toast.error(data.message);
+      }
+    } catch (error) {
+      toast.error(error.message);
+    }
+  };
+
+  const updateTherapistApplication = async (applicationId, approve) => {
+    try {
+      const { data } = await axios.post(
+        backendUrl + "/api/admin/therapist-application",
+        { applicationId, approve },
+        { headers: { aToken } }
+      );
+      if (data.success) {
+        toast.success(data.message);
+        getTherapistApplications();
+      } else {
+        toast.error(data.message);
+      }
+    } catch (error) {
+      toast.error(error.message);
+    }
+  };
+
   const getDashData = async () => {
     try {
       const { data } = await axios.get(backendUrl + "/api/admin/dashboard", {
@@ -113,6 +149,9 @@ const AdminContextProvider = (props) => {
     setAppointments,
     getAllAppointments,
     cancelAppointment,
+    therapistApplications,
+    getTherapistApplications,
+    updateTherapistApplication,
     dashData,
     getDashData,
   };

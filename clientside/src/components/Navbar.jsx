@@ -74,6 +74,12 @@ const Navbar = () => {
             Create account
           </button>
         )}
+        <button
+          onClick={() => navigate("/apply-therapist")}
+          className="border border-primary text-primary px-8 py-3 rounded-full font-light hidden md:block"
+        >
+          Join as Doctor
+        </button>
         <img
           onClick={() => setShowMenu(true)}
           className="w-6 md:hidden"
@@ -105,11 +111,14 @@ const Navbar = () => {
             <NavLink onClick={() => setShowMenu(false)} to="/about">
               <p className="px-4 py-2 rounded inline-block">ABOUT</p>
             </NavLink>
-            <NavLink onClick={() => setShowMenu(false)} to="/contact">
-              <p className="px-4 py-2 rounded inline-block">CONTACT</p>
-            </NavLink>
-          </ul>
-        </div>
+          <NavLink onClick={() => setShowMenu(false)} to="/contact">
+            <p className="px-4 py-2 rounded inline-block">CONTACT</p>
+          </NavLink>
+          <NavLink onClick={() => setShowMenu(false)} to="/apply-therapist">
+            <p className="px-4 py-2 rounded inline-block">JOIN AS DOCTOR</p>
+          </NavLink>
+        </ul>
+      </div>
       </div>
     </div>
   );

@@ -75,6 +75,8 @@ const addDoctor = async (req, res) => {
       fees,
       address: JSON.parse(address),
       date: Date.now(),
+      wallet: 0,
+      payouts: [],
     };
 
     const newDoctor = new doctorModel(doctorData);
